@@ -1,0 +1,9 @@
+PAIDEIA WEB · Aprende derecho cada día · by JohnM
+
+Esta primera versión guarda documentos y fichas en el navegador del dispositivo. Incluye importación de PDF con texto, DOCX y TXT; fichas manuales, repaso, búsqueda de pasajes con fuente, calculadora URP, avisos con la página abierta y copia de seguridad. No incorpora todavía el modelo de IA ni creación automática de fichas. Los PDF escaneados necesitan OCR previo. La extracción DOCX no da páginas fiables y puede omitir tablas o formatos complejos; revisa el resultado.
+
+Para usar sin internet, abre la web publicada una vez con conexión y espera hasta que se guarden sus archivos; después vuelve a abrirla sin conexión. Los datos locales pueden perderse al borrar datos del navegador: exporta copias con frecuencia. Los avisos no están garantizados cuando la web está cerrada. Para migrar desde Windows, importa estudio.json en Ajustes; revisa el resultado y conserva el original. Los formatos de la versión Windows pueden variar y no todas las fichas se importan automáticamente.
+
+GITHUB PAGES: crea un repositorio público vacío, sube el contenido de esta carpeta a su raíz (sin tus documentos o copias personales). En Settings > Pages selecciona Deploy from a branch, rama main y / (root). La web aparecerá en https://USUARIO.github.io/REPOSITORIO/ tras la publicación. No subas estudio.json ni archivos privados al repositorio público.
+
+BÚSQUEDA POR TEMA: en Consultar materiales, elige un tema o escribe uno y pulsa Buscar y guardar. Se consulta Wikipedia y se envía el tema. Los extractos se guardan localmente con enlace y fecha, y se pueden consultar sin conexión. Son fuentes generales no oficiales, posiblemente de otros países; no acreditan el derecho peruano ni su vigencia.
