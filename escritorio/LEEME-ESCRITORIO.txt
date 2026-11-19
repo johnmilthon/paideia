@@ -25,8 +25,19 @@ artículo en una ventana emergente mientras está abierta y, al cumplir la meta 
 el examen del día. También hay repaso semanal y simulacro cronometrado. Funciona sin IA.
 
 DATOS Y COPIAS
-Los datos se guardan en el perfil propio de Paideia Escritorio (%LOCALAPPDATA%\PaideiaEscritorio),
-separados de la versión web. Exporta copias en Ajustes con frecuencia.
+Tus documentos, fichas y avances se guardan dentro de esta carpeta (datos\perfil), separados de la versión web.
+Exporta copias en Ajustes con frecuencia.
+
+USO PORTÁTIL (USB)
+- Copia la carpeta completa al USB (ocupa ~4 GB con un modelo; ~6 GB con los dos). Funciona con cualquier letra de unidad.
+- Tus datos viajan en el USB. La velocidad se mide y guarda por computadora: en una PC nueva ejecuta
+  «Probar velocidad.cmd» una vez.
+- Cierra la ventana de Paideia y espera unos segundos antes de retirar el USB, o podrías dañar tus datos.
+- Requisitos en la otra PC: Windows 10/11 de 64 bits, Microsoft Edge o Chrome, 8 GB de RAM (16 GB para el modelo 4B).
+- Si la otra PC es más lenta, las respuestas de la IA tardarán más; la Norma del día y los exámenes no usan IA.
+- En computadoras de trabajo, el área de sistemas puede bloquear el USB, PowerShell o programas no instalados
+  (llama-server.exe). Si Windows o el antivirus lo impide, no intentes saltarte el bloqueo: consulta con sistemas.
+- Desde un USB lento la IA tarda más en cargar al abrir (lee 2,5 GB). Un USB 3.0 es recomendable.
 
 PROBLEMAS
 - Si no abre: revisa registros\motor.log.

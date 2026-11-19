@@ -9,9 +9,13 @@ $App     = Join-Path $Raiz 'app'
 $Modelos = Join-Path $Raiz 'modelos'
 $Logs    = Join-Path $Raiz 'registros'
 $Config  = Join-Path $Raiz 'config.json'
+# Datos y ajustes viajan con la carpeta (portátil): perfil de la ventana dentro de «datos»,
+# y la velocidad medida se guarda por computadora.
+$Perfil  = Join-Path $Raiz 'datos\perfil'
+$Equipo  = Join-Path $Raiz "datos\equipo-$($env:COMPUTERNAME).json"
 $Puerto  = 8765
 $Url     = "http://127.0.0.1:$Puerto/"
-New-Item -ItemType Directory -Force -Path $Modelos, $Logs | Out-Null
+New-Item -ItemType Directory -Force -Path $Modelos, $Logs, (Join-Path $Raiz 'datos') | Out-Null
 
 $Catalogo = [ordered]@{
   'preciso' = @{ Nombre = 'Qwen3 4B Instruct 2507 (más preciso)'; Archivo = 'Qwen3-4B-Instruct-2507-Q4_K_M.gguf'; Tam = '2,5 GB';
@@ -20,8 +24,16 @@ $Catalogo = [ordered]@{
                  Url = 'https://huggingface.co/unsloth/Qwen3-1.7B-GGUF/resolve/main/Qwen3-1.7B-Q4_K_M.gguf' }
 }
 
-function Leer-Config { if (Test-Path $Config) { try { return Get-Content $Config -Raw | ConvertFrom-Json } catch {} } return [pscustomobject]@{ modelo = ''; gpu = $true } }
-function Guardar-Config($c) { $c | ConvertTo-Json | Set-Content -Encoding UTF8 $Config }
+function Leer-Config {
+  $c = [pscustomobject]@{ modelo = ''; gpu = $false; hilos = 0 }
+  if (Test-Path $Config) { try { $j = Get-Content $Config -Raw | ConvertFrom-Json; if ($j.modelo) { $c.modelo = $j.modelo } } catch {} }
+  if (Test-Path $Equipo) { try { $e = Get-Content $Equipo -Raw | ConvertFrom-Json; $c.gpu = [bool]$e.gpu; $c.hilos = [int]$e.hilos } catch {} }
+  return $c
+}
+function Guardar-Config($c) {
+  [pscustomobject]@{ modelo = $c.modelo } | ConvertTo-Json | Set-Content -Encoding UTF8 $Config
+  [pscustomobject]@{ gpu = [bool]$c.gpu; hilos = [int]$c.hilos } | ConvertTo-Json | Set-Content -Encoding UTF8 $Equipo
+}
 
 function Elegir-Modelo {
   Write-Host ''
@@ -78,7 +90,7 @@ function Iniciar-Motor($modelo, $gpu) {
 }
 
 function Abrir-Ventana {
-  $perfil = Join-Path $env:LOCALAPPDATA 'PaideiaEscritorio\perfil'
+  $perfil = $Perfil
   $navs = @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
             "$env:ProgramFiles\Google\Chrome\Application\chrome.exe", "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe",
             "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe")
@@ -115,7 +127,7 @@ function Probar-Velocidad {
   }
   if ($res.Count -gt 0) {
     $mejor = ($res.GetEnumerator() | Sort-Object { $_.Value.seg } | Select-Object -First 1).Key
-    $c = Leer-Config; $c.gpu = ($mejor -eq 'gpu'); $c | Add-Member -Force hilos $res[$mejor].t; Guardar-Config $c
+    $c = Leer-Config; $c.gpu = ($mejor -eq 'gpu'); $c.hilos = [int]$res[$mejor].t; Guardar-Config $c
     $txt = if ($c.gpu) { 'gráficos integrados' } else { 'procesador' }
     Write-Host ''
     Write-Host "  Paideia usará: $txt" -ForegroundColor Green
@@ -128,7 +140,7 @@ function Probar-Velocidad {
 try {
   if ($Accion -eq 'probar') { Probar-Velocidad; exit }
   if ($Accion -eq 'vigilar') {
-    $perfil = Join-Path $env:LOCALAPPDATA 'PaideiaEscritorio\perfil'
+    $perfil = $Perfil
     Start-Sleep 15
     while (Get-CimInstance Win32_Process -Filter "Name='msedge.exe' OR Name='chrome.exe'" | Where-Object { $_.CommandLine -like "*$perfil*" }) { Start-Sleep 5 }
     if ($Motor_Id) { Stop-Process -Id $Motor_Id -Force -ErrorAction SilentlyContinue }
