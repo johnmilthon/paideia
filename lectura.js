@@ -312,3 +312,38 @@ async function errorsToCards() {
 export function closeExamIfOpen() { exam = null; clearInterval(timer); }
 // Para pruebas
 export const __test = { buildQuestions, numberFacts, articles };
+
+// ---------- Fichas automáticas por artículo ----------
+// Una ficha por artículo («¿Qué establece…?») y, si el artículo tiene un plazo o cantidad, otra para completarlo.
+// Las fichas nuevas se reparten en el calendario (por defecto 10 por día) para no saturar los repasos.
+export function makeCards(doc, perDay) {
+  const list = articles(doc); if (!list.length) return { created: 0, articles: 0 };
+  perDay = Math.max(1, +perDay || +ctx.data.settings.newPerDay || 10);
+  const have = new Set(ctx.data.cards.filter(c => c.artKey).map(c => c.artKey));
+  const name = shortName(doc); let created = 0, slot = 0;
+  // Cada norma se programa desde hoy: N artículos nuevos por día (más sus fichas de plazos).
+  const dayFor = n => { const d = new Date(); d.setDate(d.getDate() + Math.floor(n / perDay)); return d.toLocaleDateString('en-CA'); };
+  for (const a of list) {
+    const key = doc.id + '#' + a.num;
+    if (!have.has(key)) {
+      ctx.data.cards.push({ id: crypto.randomUUID(), question: `¿Qué establece el artículo ${a.num}${a.title ? ' («' + a.title + '»)' : ''} de la ${name}?`, answer: a.text.slice(0, 1500), source: name, page: `art. ${a.num}`, origin: 'Norma (automática)', artKey: key, due: dayFor(slot++), interval: 0 });
+      created++;
+    }
+    const nkey = key + '#n';
+    const f = numberFacts(a.text)[0];
+    if (f && !have.has(nkey)) {
+      const sent = sentenceAround(a.text, f.index);
+      if (sent.length > 30 && sent.length < 450) {
+        ctx.data.cards.push({ id: crypto.randomUUID(), question: `Completa (art. ${a.num}, ${name}):\n«${sent.replace(f.phrase, '_____')}»`, answer: f.phrase + '\n\n' + sent, source: name, page: `art. ${a.num}`, origin: 'Norma (automática)', artKey: nkey, due: dayFor(slot - 1), interval: 0 });
+        created++;
+      }
+    }
+  }
+  return { created, articles: list.length, days: Math.ceil(list.length / perDay) };
+}
+export function removeAutoCards(doc) {
+  const before = ctx.data.cards.length;
+  ctx.data.cards = ctx.data.cards.filter(c => !(c.artKey && c.artKey.startsWith(doc.id + '#')));
+  return before - ctx.data.cards.length;
+}
+export const countAutoCards = doc => ctx.data.cards.filter(c => c.artKey && c.artKey.startsWith(doc.id + '#')).length;

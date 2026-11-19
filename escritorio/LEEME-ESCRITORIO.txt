@@ -24,6 +24,10 @@ Elige una norma, la meta diaria (p. ej., 10 artículos) y el horario de avisos. 
 artículo en una ventana emergente mientras está abierta y, al cumplir la meta o a la hora fijada, propone
 el examen del día. También hay repaso semanal y simulacro cronometrado. Funciona sin IA.
 
+FICHAS AUTOMÁTICAS
+Al importar una norma, Paideia crea una ficha por artículo (10 nuevas por día; cámbialo en Ajustes).
+Para las normas del paquete, pulsa «Crear fichas por artículo» en Biblioteca en las que quieras estudiar.
+
 DATOS Y COPIAS
 Tus documentos, fichas y avances se guardan dentro de esta carpeta (datos\perfil), separados de la versión web.
 Exporta copias en Ajustes con frecuencia.

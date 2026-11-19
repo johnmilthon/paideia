@@ -70,6 +70,11 @@ hora fijada, propone el examen del día: «¿qué regula el artículo…?», con
 y verdadero o falso. Los errores pueden convertirse en fichas. También hay repaso semanal y simulacro cronometrado.
 Funciona sin IA.
 
+Fichas automáticas: al importar una norma (por ejemplo, una exportación .doc del SPIJ), Paideia la separa en
+artículos y crea una ficha por artículo, más una ficha para completar cuando el artículo tiene un plazo o
+cantidad. Las fichas nuevas se reparten a 10 por día (puedes cambiarlo en Ajustes). Para las normas del paquete
+o los PDF, usa «Crear fichas por artículo» en Biblioteca; «Quitar sus fichas» las elimina sin tocar tus fichas manuales.
+
 ------------------------------------------------------------
 8. VERSIÓN DE ESCRITORIO (RECOMENDADA PARA LA IA)
 ------------------------------------------------------------
