@@ -133,7 +133,7 @@ export function retrieve(docs, query, k = 5) {
     let s = 0, matched = 0;
     for (const [t, w] of qw) {
       const f = c.tf.get(t); if (!f) continue;
-      if (w === 1) matched++;
+      matched += w === 1 ? 1 : 0.5;
       const n = idx.df.get(t) || 0;
       const idf = Math.log(1 + (idx.N - n + 0.5) / (n + 0.5));
       s += w * idf * (f * (k1 + 1)) / (f + k1 * (1 - b + b * c.len / idx.avg));
@@ -154,7 +154,8 @@ export function retrieve(docs, query, k = 5) {
     out.push(r); if (out.length >= k) break;
   }
   const missing = qt.filter(t => !idx.df.has(t) && !/^\d/.test(t));
-  const need = qt.length <= 2 ? 1 : Math.ceil(qt.length * 0.6);
+  const n = qt.length;
+  const need = n <= 2 ? 1 : n <= 4 ? 2 : Math.max(3, Math.ceil(n * 0.45));
   const sufficient = out.some(r => r.matched >= need || (wantArt && r.head === wantArt));
   return { results: out, terms: qt, sufficient, missing };
 }
@@ -200,9 +201,16 @@ export function verifyAnswer(answer, fragments) {
     if (r.type !== 'plazo' && new RegExp('(?:^|[^0-9])' + r.key.replace(/[-/]/g, '[-/]') + '(?:[^0-9]|$)').test(ctxNorm) && r.type !== 'ley') continue;
     if (!unverified.some(u => u.type === r.type && u.key === r.key)) unverified.push(r);
   }
+  // Negaciones del texto fuente que la respuesta omite (p. ej. «no es capitalizable» -> «es capitalizable»).
+  const ansN = norm(answer).replace(/\s+/g, ' ');
+  const polarity = [];
+  for (const m of ctxNorm.matchAll(/\bno (?:es|son|sera|seran|esta|estan|procede|corresponde|puede|pueden|debe|deben|se)\s+([a-z]{5,})/g)) {
+    const w = m[2] || m[1]; const word = m[1];
+    if (ansN.includes(' ' + word) && !new RegExp('\\b(?:no|ni|nunca|tampoco|sin)\\b[^.]{0,40}' + word).test(ansN)) { const lbl = m[0]; if (!polarity.includes(lbl)) polarity.push(lbl); }
+  }
   const cites = [...String(answer).matchAll(/\[F(\d+)\]/g)].map(m => +m[1]);
   const badCites = cites.filter(n => n < 1 || n > fragments.length);
-  return { unverified, cites: [...new Set(cites)].filter(n => n >= 1 && n <= fragments.length), badCites: [...new Set(badCites)] };
+  return { unverified, polarity, cites: [...new Set(cites)].filter(n => n >= 1 && n <= fragments.length), badCites: [...new Set(badCites)] };
 }
 
 export const NO_SUPPORT = 'No encuentro sustento suficiente en tus materiales para responder esto.';

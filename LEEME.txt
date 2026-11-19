@@ -10,8 +10,8 @@ Sin IA (búsqueda de fragmentos, fichas, repasos): cualquier navegador moderno.
 Con IA local:
 - Windows 10 u 11 con Google Chrome o Microsoft Edge actualizados (WebGPU, versión 113 o superior). Firefox 141 o superior en Windows también ofrece WebGPU, pero se ha probado menos.
 - Aceleración por hardware activada en el navegador y controladores de video actualizados.
-- Modelo recomendado, Qwen3 1.7B: descarga de unos 1 GB, unos 2 GB de memoria de video (2,6 GB en modo de compatibilidad) y 8 GB de RAM o más.
-- Modelo de mejor redacción, Qwen3 4B: descarga de unos 2,3 GB, unos 3,4 GB de memoria de video (4,3 GB en compatibilidad) y 16 GB de RAM o una tarjeta gráfica de 4 GB o más.
+- Modelo más rápido, Qwen3 1.7B: descarga de unos 1 GB, unos 2 GB de memoria de video (2,6 GB en modo de compatibilidad) y 8 GB de RAM o más.
+- Modelo más preciso, Qwen3 4B (recomendado con 16 GB de RAM o más): descarga de unos 2,3 GB, unos 3,4 GB de memoria de video (4,3 GB en compatibilidad) y 16 GB de RAM o una tarjeta gráfica de 4 GB o más.
 - Espacio libre en disco suficiente para el modelo (el navegador lo guarda en su almacenamiento).
 Ambos modelos se distribuyen con licencia Apache 2.0, de uso gratuito.
 
@@ -19,11 +19,11 @@ Ambos modelos se distribuyen con licencia Apache 2.0, de uso gratuito.
 2. ACTIVAR Y USAR LA IA
 ------------------------------------------------------------
 1) Abre Paideia con internet y entra en «Consultar materiales».
-2) En el panel «IA local», elige el modelo (se recomienda Qwen3 1.7B) y pulsa «Descargar y activar IA». Verás el progreso. La descarga viene de Hugging Face (archivos del modelo) y de GitHub (programa del modelo). Tus documentos y preguntas no se envían.
+2) En el panel «IA local», elige el modelo (Qwen3 4B si tu equipo tiene 16 GB de RAM o más; si no, Qwen3 1.7B) y pulsa «Descargar y activar IA». Verás el progreso. La descarga viene de Hugging Face (archivos del modelo) y de GitHub (programa del modelo). Tus documentos y preguntas no se envían.
 3) Cuando aparezca «IA local lista», escribe tu pregunta, elige qué necesitas (responder, explicar de forma sencilla, resumir o crear una pregunta de práctica) y pulsa «Preguntar a la IA».
 4) Paideia busca primero los fragmentos más pertinentes de tu biblioteca y le pide a la IA que responda solo con ellos, con citas [F1], [F2]… Debajo verás las fuentes (documento, artículo si se detecta y página, o «página no disponible» en DOCX, TXT, .doc y páginas web).
 5) Si los materiales no tienen sustento suficiente, la IA no se consulta y Paideia lo dice.
-6) Paideia revisa la respuesta: si menciona artículos, leyes, casaciones, plazos o citas que no aparecen en los fragmentos usados, muestra una advertencia.
+6) Paideia revisa la respuesta: si menciona artículos, leyes, casaciones, plazos o citas que no aparecen en los fragmentos usados, o si omite una negación del texto fuente («no es…», «no procede…»), muestra una advertencia.
 7) Las fichas creadas con IA se abren en un formulario para revisarlas y editarlas antes de guardarlas.
 8) Al volver a abrir Paideia, pulsa «Activar IA»: se carga desde el equipo, sin descargar de nuevo.
 
@@ -52,6 +52,7 @@ Ajustes › «Exportar copia» descarga un .json con documentos, fichas y ajuste
 ------------------------------------------------------------
 6. LIMITACIONES CONOCIDAS
 ------------------------------------------------------------
+- Pruebas reales en una PC con Intel Iris Xe y 32 GB de RAM: Qwen3 1.7B se descargó y cargó en 1,5 min y respondió en 15–30 s, pero en una respuesta invirtió una negación. Qwen3 4B se descargó en 3,5 min, acertó en todas las preguntas y tardó 40–70 s por respuesta.
 - La IA es un modelo pequeño: puede equivocarse, resumir mal o malinterpretar. Contrasta siempre con la fuente. No es asesoría legal.
 - La búsqueda es por palabras (con algunos sinónimos jurídicos): si tus materiales usan otros términos, reformula la consulta.
 - Las páginas solo existen en los PDF; en DOCX, TXT, .doc y textos web se indica «página no disponible» (cuando se puede, se muestra el artículo).

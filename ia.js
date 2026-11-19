@@ -3,14 +3,14 @@
 
 export const MODELS = {
   ligero: {
-    base: 'Qwen3-1.7B', name: 'Qwen3 1.7B', tag: 'Recomendado', download: '≈ 1 GB', downloadMB: 1000,
+    base: 'Qwen3-1.7B', name: 'Qwen3 1.7B', tag: 'Más rápido', download: '≈ 1 GB', downloadMB: 1000,
     vram: { f16: 2037, f32: 2635 }, ram: '8 GB de RAM o más', license: 'Apache 2.0 (uso gratuito, incluso comercial)',
-    note: 'Rápido y liviano. Adecuado para la mayoría de computadoras con Windows 10/11 y gráficos integrados recientes.'
+    note: 'Liviano: funciona en la mayoría de computadoras con Windows 10/11. En las pruebas respondió en 15–30 s, pero llegó a invertir el sentido de una negación; Paideia avisa cuando lo detecta. Revisa siempre la fuente.'
   },
   calidad: {
-    base: 'Qwen3-4B', name: 'Qwen3 4B', tag: 'Mejor redacción', download: '≈ 2,3 GB', downloadMB: 2300,
+    base: 'Qwen3-4B', name: 'Qwen3 4B', tag: 'Más preciso', download: '≈ 2,3 GB', downloadMB: 2300,
     vram: { f16: 3432, f32: 4328 }, ram: '16 GB de RAM o tarjeta gráfica con 4 GB o más', license: 'Apache 2.0 (uso gratuito, incluso comercial)',
-    note: 'Respuestas más cuidadas pero más lento y pesado. Úsalo solo si el modelo recomendado funciona bien en tu equipo.'
+    note: 'Recomendado si tu equipo tiene 16 GB de RAM o más. En las pruebas acertó en todas las preguntas, pero tardó 40–70 s por respuesta con gráficos integrados.'
   }
 };
 

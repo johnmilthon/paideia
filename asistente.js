@@ -21,20 +21,19 @@ const $ = s => document.querySelector(s);
 export function init(c) { ctx = c; }
 
 const MODES = {
-  responder: { label: 'Responder una pregunta', ask: q => `Responde la pregunta usando solo los fragmentos.\n\nPREGUNTA: ${q}` },
+  responder: { label: 'Responder una pregunta', ask: q => `PREGUNTA: ${q}` },
   explicar: { label: 'Explicar de forma sencilla', ask: q => `Explica de forma sencilla, como a un estudiante que empieza, lo que dicen los fragmentos sobre: ${q}. Usa un ejemplo breve solo si se desprende de los fragmentos.` },
   resumir: { label: 'Resumir', ask: q => `Resume en 3 a 6 viñetas lo que dicen los fragmentos sobre: ${q}. Cada viñeta con su cita.` },
   practica: { label: 'Crear pregunta de práctica', ask: q => `Redacta UNA pregunta de práctica con su respuesta sobre «${q}», basada solo en los fragmentos. Usa exactamente este formato:\nPREGUNTA: (la pregunta)\nRESPUESTA: (la respuesta, con citas [F1], [F2]...)` }
 };
 
-const SYSTEM = `Eres el asistente de estudio jurídico de Paideia. Respondes siempre en español y únicamente con la información de los FRAGMENTOS que te entrega el usuario.
-Reglas obligatorias:
-1. No uses conocimientos propios ni externos. Si los fragmentos no contienen información suficiente, responde exactamente: «${NO_SUPPORT}» y di brevemente qué información faltaría.
-2. Indica la fuente de cada afirmación con la etiqueta del fragmento, por ejemplo [F2].
-3. No inventes normas, artículos, plazos, fechas, citas textuales, casaciones ni referencias. Solo menciona números de artículos, leyes, expedientes o plazos que aparezcan literalmente en los fragmentos.
-4. Respeta el tipo de fuente: los apuntes y las webs no oficiales no son normas oficiales. No afirmes que una norma está vigente salvo que el fragmento diga «vigencia verificada».
-5. Si un fragmento indica otro país, advierte que no corresponde necesariamente al derecho peruano.
-6. Sé claro y breve (máximo 250 palabras). No des consejos legales sobre casos reales; es material de estudio.`;
+const SYSTEM = `Eres el asistente de estudio jurídico de Paideia. Responde en español usando ÚNICAMENTE los FRAGMENTOS que se te entregan.
+- Si los fragmentos contienen la respuesta, respóndela de forma directa y breve, y pon después de cada afirmación la etiqueta del fragmento que la respalda, por ejemplo [F1].
+- Lee con cuidado las negaciones y excepciones («no», «salvo», «excepto»): no cambies el sentido del texto.
+- Copia los números de artículos, plazos y normas tal como aparecen en los fragmentos. No agregues normas, artículos, plazos, casaciones ni citas que no estén en ellos. No uses conocimientos propios.
+- Solo si ningún fragmento trata lo que se pregunta, responde: «${NO_SUPPORT}»
+- Los apuntes y webs no oficiales no son normas oficiales; no digas que una norma está vigente si el fragmento no dice «vigencia verificada». Si un fragmento indica OTRO PAÍS, advierte que no corresponde necesariamente al derecho peruano.
+- Es material de estudio, no asesoría legal. Máximo 200 palabras.`;
 
 function fragmentHeader(f, i) {
   const info = sourceInfo(f.doc, f.text);
@@ -45,7 +44,7 @@ export function buildMessages(mode, query, fragments) {
   const ctxText = fragments.map((f, i) => fragmentHeader(f, i) + '\n' + f.text).join('\n\n');
   return [
     { role: 'system', content: SYSTEM },
-    { role: 'user', content: `FRAGMENTOS:\n${ctxText}\n\n${MODES[mode].ask(query)}` }
+    { role: 'user', content: `FRAGMENTOS:\n\n${ctxText}\n\n${MODES[mode].ask(query)}\n\nUsa solo los fragmentos y cita [F1], [F2]...` }
   ];
 }
 
@@ -157,7 +156,7 @@ async function runAI(mode, query, fragments) {
   busy = true; updateAskBtn(); $('#stopbtn')?.classList.remove('hidden');
   box.innerHTML = `<div class="answer ai"><span class="muted">Redactando con base en ${fragments.length} fragmento(s)…</span></div>`;
   try {
-    const text = await IA.generate(buildMessages(mode, query, fragments), { onToken: t => { const a = box.querySelector('.answer'); if (a) a.textContent = t; } });
+    const text = await IA.generate(buildMessages(mode, query, fragments), { maxTokens: mode === 'resumir' ? 500 : 400, onToken: t => { const a = box.querySelector('.answer'); if (a) a.textContent = t; } });
     last.answer = text || NO_SUPPORT;
     drawAnswer(last.answer, fragments, mode, true);
   } catch (e) {
@@ -173,6 +172,7 @@ function drawAnswer(text, fragments, mode, fresh, note = '') {
   const warns = [];
   if (note) warns.push(note);
   if (v.unverified.length) warns.push(`<b>Atención:</b> la respuesta menciona referencias que <b>no aparecen</b> en los fragmentos usados: ${v.unverified.map(u => ctx.esc(u.label)).join('; ')}. No las uses sin comprobarlas en la fuente original.`);
+  if (v.polarity?.length) warns.push(`<b>Revisa el sentido:</b> el texto fuente dice ${v.polarity.map(x => '«' + ctx.esc(x) + '»').join(', ')}, pero la respuesta no recoge esa negación. Comprueba la respuesta con el fragmento.`);
   if (v.badCites.length) warns.push(`La respuesta cita fragmentos inexistentes (${v.badCites.map(n => 'F' + n).join(', ')}).`);
   if (!noSupport && fragments.length && !v.cites.length) warns.push('La respuesta no indica qué fragmento respalda cada idea. Contrástala con las fuentes de abajo.');
   const used = v.cites.length ? v.cites.map(n => fragments[n - 1]) : fragments;
@@ -207,7 +207,7 @@ export async function handleClick(b) {
     const mode = $('#mode').value;
     if (!IA.status().loaded) { search(q); ctx.toast('La IA local no está activa: se muestran los fragmentos con sus fuentes.'); $('#aipanel')?.scrollIntoView({ behavior: 'smooth' }); return true; }
     const r = search(q);
-    await runAI(mode, q, r.sufficient ? r.results.slice(0, 5) : []);
+    await runAI(mode, q, r.sufficient ? r.results.slice(0, 4) : []);
     return true;
   }
   if (b.dataset.site) {
