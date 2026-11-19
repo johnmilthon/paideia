@@ -88,7 +88,7 @@ export function sourceInfo(doc, fragmentText = '') {
 }
 
 // Sinónimos jurídicos frecuentes (peso reducido) para compensar la búsqueda por palabras.
-const SYN = { laboral: ['trabajo', 'trabajador'], trabajo: ['laboral'], trabajador: ['laboral'], apelar: ['apelacion'], apelacion: ['apelar', 'impugnacion'], impugnar: ['impugnacion', 'apelacion'], despido: ['despedido', 'extincion'], cts: ['compensacion', 'servicio'], plazo: ['termino', 'dia'], sueldo: ['remuneracion'], salario: ['remuneracion'], remuneracion: ['sueldo'], juez: ['juzgado', 'magistrado'], demanda: ['demandante'], vacacion: ['descanso'], gratificacion: ['gratificacione'], contrato: ['contratacion'] };
+const SYN = { laboral: ['trabajo', 'trabajador'], trabajo: ['laboral'], apelar: ['apelacion'], apelacion: ['apelar', 'impugnacion'], impugnar: ['impugnacion', 'apelacion'], despido: ['despedido', 'extincion'], cts: ['compensacion', 'servicio'], plazo: ['termino', 'dia'], sueldo: ['remuneracion'], salario: ['remuneracion'], remuneracion: ['sueldo'], juez: ['juzgado', 'magistrado'], demanda: ['demandante'], demandar: ['demanda', 'comparecer'], trabajador: ['laboral', 'prestador'], vacacion: ['descanso'], gratificacion: ['gratificacione'], contrato: ['contratacion'] };
 const expand = qt => { const out = new Map(qt.map(t => [t, 1])); for (const t of qt) for (const x of SYN[t] || []) { const k = stem(x); if (!out.has(k)) out.set(k, 0.5); } return out; };
 
 // ---------- Índice BM25 ----------

@@ -1,0 +1,35 @@
+PAIDEIA ESCRITORIO · Aprende derecho cada día · by JohnM
+
+Paideia como aplicación de Windows, con IA local que se ejecuta con llama.cpp (gratuito, licencia MIT)
+en el procesador o en los gráficos integrados. No necesita tarjeta de video dedicada ni internet,
+salvo para descargar el modelo la primera vez.
+
+CÓMO SE USA
+1) Doble clic en «Probar velocidad.cmd» (solo la primera vez). Te pide elegir el modelo, lo descarga
+   y mide cuánto tarda una respuesta con el procesador y con los gráficos integrados. Paideia
+   usará automáticamente lo que sea más rápido.
+2) Doble clic en «Abrir Paideia.cmd». Se abre Paideia en su propia ventana. Al cerrar la ventana, el motor de IA se detiene.
+3) La primera vez, en Inicio pulsa «Cargar normas incluidas» (tus 69 normas del SPIJ). Si tienes una copia
+   de la versión web, impórtala en Ajustes › «Añadir desde copia o paquete».
+
+MODELOS (licencia Apache 2.0)
+- Qwen3 4B Instruct 2507 · 2,5 GB · más preciso (recomendado). En tu PC (i7-12700, 32 GB): respuestas en 18–22 s,
+  primeras palabras a los ~10 s, y acertó en todas las preguntas de prueba.
+- Qwen3 1.7B · 1,1 GB · más rápido (~7 s), pero en las pruebas negó tener sustento cuando sí lo había.
+En tu equipo el procesador fue igual o más rápido que los gráficos integrados; Paideia usa el procesador.
+Para cambiarlo: «Elegir modelo.cmd».
+
+NORMA DEL DÍA
+Elige una norma, la meta diaria (p. ej., 10 artículos) y el horario de avisos. Paideia muestra el siguiente
+artículo en una ventana emergente mientras está abierta y, al cumplir la meta o a la hora fijada, propone
+el examen del día. También hay repaso semanal y simulacro cronometrado. Funciona sin IA.
+
+DATOS Y COPIAS
+Los datos se guardan en el perfil propio de Paideia Escritorio (%LOCALAPPDATA%\PaideiaEscritorio),
+separados de la versión web. Exporta copias en Ajustes con frecuencia.
+
+PROBLEMAS
+- Si no abre: revisa registros\motor.log.
+- Si Windows muestra «Windows protegió su PC», elige «Más información» › «Ejecutar de todos modos»
+  (los programas de motor\ son los de llama.cpp publicados en github.com/ggml-org/llama.cpp).
+- Los avisos aparecen solo mientras la ventana de Paideia está abierta.

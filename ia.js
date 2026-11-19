@@ -17,6 +17,22 @@ export const MODELS = {
 export const modelId = (key, f16) => MODELS[key].base + (f16 ? '-q4f16_1-MLC' : '-q4f32_1-MLC');
 
 let lib = null, engine = null, loadedId = null, worker = null, supportCache = null;
+// Modo escritorio: Paideia Escritorio sirve la app desde llama-server (llama.cpp) en 127.0.0.1,
+// que ejecuta el modelo de forma nativa en Windows (procesador o gráficos integrados) sin navegador WebGPU.
+let server = null, abortCtl = null;
+export async function detectServer() {
+  if (server) return server;
+  if (!/^(127\.0\.0\.1|localhost)$/.test(location.hostname)) return null;
+  try {
+    const r = await fetch('./v1/models', { signal: AbortSignal.timeout(3000) });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const id = j.data?.[0]?.id || j.models?.[0]?.name || 'modelo local';
+    server = { id: String(id).split(/[\\/]/).pop().replace(/\.gguf$/i, '') };
+    return server;
+  } catch { return null; }
+}
+export const serverInfo = () => server;
 const getLib = async () => (lib ||= await import('./vendor/web-llm.js'));
 
 // Comprueba navegador, WebGPU, memoria y almacenamiento ANTES de descargar.
@@ -52,7 +68,7 @@ export async function isCached(key, f16) {
   try { const l = await getLib(); return await l.hasModelInCache(modelId(key, f16)); } catch { return false; }
 }
 
-export function status() { return { loaded: !!engine, id: loadedId }; }
+export function status() { return server ? { loaded: true, id: server.id, desktop: true } : { loaded: !!engine, id: loadedId }; }
 
 // Descarga (si hace falta) y carga el modelo. onProgress recibe {progress: 0..1, text}.
 export async function load(key, f16, onProgress) {
@@ -94,6 +110,7 @@ export function friendlyError(e) {
 
 // Genera texto en streaming. Devuelve el texto completo (sin bloques de «pensamiento»).
 export async function generate(messages, { onToken, maxTokens = 700, temperature = 0.2 } = {}) {
+  if (server) return generateServer(messages, { onToken, maxTokens, temperature });
   if (!engine) throw new Error('La IA no está cargada.');
   const stream = await engine.chat.completions.create({
     messages, stream: true, temperature, top_p: 0.9, max_tokens: maxTokens,
@@ -107,7 +124,32 @@ export async function generate(messages, { onToken, maxTokens = 700, temperature
   return clean(text);
 }
 
-export function stop() { try { engine?.interruptGenerate(); } catch {} }
+async function generateServer(messages, { onToken, maxTokens, temperature }) {
+  abortCtl = new AbortController();
+  const r = await fetch('./v1/chat/completions', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: abortCtl.signal,
+    body: JSON.stringify({ messages, stream: true, temperature, top_p: 0.9, max_tokens: maxTokens, cache_prompt: true, chat_template_kwargs: { enable_thinking: false } })
+  });
+  if (!r.ok || !r.body) throw new Error('El motor de IA de escritorio no respondió (' + r.status + '). Cierra y vuelve a abrir Paideia.');
+  const reader = r.body.getReader(), dec = new TextDecoder();
+  let buf = '', text = '';
+  try {
+    for (;;) {
+      const { value, done } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+        if (!line.startsWith('data:')) continue;
+        const d = line.slice(5).trim(); if (d === '[DONE]') continue;
+        try { text += JSON.parse(d).choices?.[0]?.delta?.content || ''; onToken?.(clean(text)); } catch {}
+      }
+    }
+  } catch (e) { if (e.name !== 'AbortError') throw e; }
+  return clean(text);
+}
+
+export function stop() { try { abortCtl?.abort(); } catch {} try { engine?.interruptGenerate(); } catch {} }
 
 const clean = t => t.replace(/<think>[\s\S]*?(<\/think>|$)/g, '').replace(/^\s+/, '');
 

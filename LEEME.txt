@@ -62,6 +62,24 @@ Ajustes › «Exportar copia» descarga un .json con documentos, fichas y ajuste
 - La primera carga del modelo en la tarjeta gráfica puede tardar uno o varios minutos.
 
 ------------------------------------------------------------
-7. GITHUB PAGES
+7. NORMA DEL DÍA
+------------------------------------------------------------
+Elige una norma de tu biblioteca, la meta diaria de artículos y el horario de avisos. Paideia separa la norma
+por artículos, muestra el siguiente en una ventana emergente mientras está abierta y, al cumplir la meta o a la
+hora fijada, propone el examen del día: «¿qué regula el artículo…?», contenido del artículo, plazos y cantidades,
+y verdadero o falso. Los errores pueden convertirse en fichas. También hay repaso semanal y simulacro cronometrado.
+Funciona sin IA.
+
+------------------------------------------------------------
+8. VERSIÓN DE ESCRITORIO (RECOMENDADA PARA LA IA)
+------------------------------------------------------------
+La carpeta «escritorio» contiene los programas para usar Paideia como aplicación de Windows con IA nativa
+(llama.cpp), sin depender de WebGPU. Ver escritorio/LEEME-ESCRITORIO.txt. Para armarla: copia el contenido
+de esta web en una subcarpeta «app», descarga llama.cpp para Windows (llama-bXXXX-bin-win-vulkan-x64.zip,
+github.com/ggml-org/llama.cpp) en «motor» y ejecuta «Probar velocidad.cmd», que descarga el modelo.
+Prueba real en un i7-12700 sin tarjeta de video: con Qwen3 4B, respuestas en 18–22 s (en el navegador, 40–70 s).
+
+------------------------------------------------------------
+9. GITHUB PAGES
 ------------------------------------------------------------
 Sube el contenido de esta carpeta a la raíz del repositorio (rama main). En Settings › Pages elige «Deploy from a branch», rama main y carpeta / (root). No subas tus copias (paideia-copia-*.json), paquetes de normas ni documentos personales al repositorio público.

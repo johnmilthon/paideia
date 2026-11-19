@@ -41,7 +41,8 @@ function fragmentHeader(f, i) {
 }
 
 export function buildMessages(mode, query, fragments) {
-  const ctxText = fragments.map((f, i) => fragmentHeader(f, i) + '\n' + f.text).join('\n\n');
+  const trim = t => t.length > 900 ? t.slice(0, 900).replace(/\s+\S*$/, '') + ' […]' : t;
+  const ctxText = fragments.map((f, i) => fragmentHeader(f, i) + '\n' + trim(f.text)).join('\n\n');
   return [
     { role: 'system', content: SYSTEM },
     { role: 'user', content: `FRAGMENTOS:\n\n${ctxText}\n\n${MODES[mode].ask(query)}\n\nUsa solo los fragmentos y cita [F1], [F2]...` }
@@ -81,6 +82,10 @@ let prep = { state: 'idle', progress: 0, text: '', error: '', support: null, cac
 function panel() {
   const s = ctx.data.settings.ai || { model: 'ligero' };
   const st = IA.status();
+  if (st.desktop) return `<h3>IA local · Paideia Escritorio</h3>
+  <div class="ok">● IA lista: ${ctx.esc(st.id)}. Se ejecuta en tu computadora con llama.cpp (procesador y gráficos integrados), sin internet.</div>
+  <p class="muted">Tus documentos, preguntas y avances no salen de tu equipo. Para cambiar de modelo, usa «Elegir modelo» en la carpeta de Paideia Escritorio.</p>
+  <div class="warn" style="margin-top:14px">Las respuestas se basan solo en tus materiales y pueden contener errores. Las normas importadas no se consideran vigentes sin comprobación en la fuente oficial (p. ej., el SPIJ).</div>`;
   const sup = prep.support;
   const f16 = sup?.f16 ?? true;
   const modelCards = Object.entries(IA.MODELS).map(([k, m]) => `<label class="model ${s.model === k ? 'sel' : ''}"><input type="radio" name="aimodel" value="${k}" ${s.model === k ? 'checked' : ''} ${prep.state === 'loading' ? 'disabled' : ''}><span><b>${m.name}</b> <span class="pill">${m.tag}</span><br><span class="muted">Descarga ${m.download} · memoria de video ≈ ${(m.vram[f16 ? 'f16' : 'f32'] / 1024).toFixed(1).replace('.', ',')} GB · ${m.ram}</span><br><span class="muted">Licencia ${m.license}</span><br><span class="muted">${m.note}</span></span></label>`).join('');
@@ -113,9 +118,11 @@ function updateAskBtn() {
 }
 
 export async function afterRender() {
+  if (await IA.detectServer()) { refreshPanel(); }
   updateAskBtn();
   if (last.results.length) drawResults(last.results, last.sufficient);
   if (last.answer) drawAnswer(last.answer, last.fragments, last.mode, false);
+  if (IA.status().desktop) { if (last.results.length) drawResults(last.results, last.sufficient); return; }
   if (!prep.support) { prep.support = await IA.checkSupport(); refreshPanel(); }
   if (prep.support.ok && prep.cached === null) {
     const s = ctx.data.settings.ai || { model: 'ligero' };
@@ -156,8 +163,11 @@ async function runAI(mode, query, fragments) {
   busy = true; updateAskBtn(); $('#stopbtn')?.classList.remove('hidden');
   box.innerHTML = `<div class="answer ai"><span class="muted">Redactando con base en ${fragments.length} fragmento(s)…</span></div>`;
   try {
-    const text = await IA.generate(buildMessages(mode, query, fragments), { maxTokens: mode === 'resumir' ? 500 : 400, onToken: t => { const a = box.querySelector('.answer'); if (a) a.textContent = t; } });
-    last.answer = text || NO_SUPPORT;
+    const text = await IA.generate(buildMessages(mode, query, fragments), { maxTokens: mode === 'resumir' ? 400 : 300, onToken: t => { const a = box.querySelector('.answer'); if (a) a.textContent = t; } });
+    // Si el modelo respondió con citas y además añadió la frase de «sin sustento», se quita esa frase sobrante.
+    let t = text || NO_SUPPORT;
+    if (/\[F\d+\]/.test(t) && t.includes(NO_SUPPORT)) t = t.replace(NO_SUPPORT, '').trim();
+    last.answer = t;
     drawAnswer(last.answer, fragments, mode, true);
   } catch (e) {
     console.error(e);
@@ -207,7 +217,7 @@ export async function handleClick(b) {
     const mode = $('#mode').value;
     if (!IA.status().loaded) { search(q); ctx.toast('La IA local no está activa: se muestran los fragmentos con sus fuentes.'); $('#aipanel')?.scrollIntoView({ behavior: 'smooth' }); return true; }
     const r = search(q);
-    await runAI(mode, q, r.sufficient ? r.results.slice(0, 4) : []);
+    await runAI(mode, q, r.sufficient ? r.results.slice(0, 3) : []);
     return true;
   }
   if (b.dataset.site) {

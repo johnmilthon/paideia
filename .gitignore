@@ -1,3 +1,8 @@
 paideia-copia-*.json
 *paquete*.json
 estudio.json
+*.gguf
+escritorio/motor/
+escritorio/modelos/
+escritorio/registros/
+escritorio/config.json
